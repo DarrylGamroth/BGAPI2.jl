@@ -1,28 +1,28 @@
-mutable struct System
+struct System
     system::Ptr{BGAPI2_System}
 
     function System(file_path::AbstractString)
         system = Ref{Ptr{BGAPI2_System}}()
         @check BGAPI2_LoadSystemFromPath(file_path, system)
-
-        finalizer(new(system[])) do s
-            close(s)
-            release(s)
-        end
+        new(system[])
     end
 
     function System(index::Int)
         system = Ref{Ptr{BGAPI2_System}}()
         @check BGAPI2_GetSystem(index - 1, system)
-
-        finalizer(new(system[])) do s
-            isopen(s) && close(s)
-            # release(s)
-        end
+        new(system[])
     end
 end
 
 Base.open(s::System) = @check BGAPI2_System_Open(s.system)
+function Base.open(f::Function, s::System)
+    open(s)
+    try
+        f(s)
+    finally
+        close(s)
+    end
+end
 Base.close(s::System) = @check BGAPI2_System_Close(s.system)
 release(s::System) = @check BGAPI2_ReleaseSystem(s.system)
 

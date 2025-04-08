@@ -1,14 +1,12 @@
 mutable struct Device
-    device::Ptr{BGAPI2_Device}
-    interface::Interface
+    const device::Ptr{BGAPI2_Device}
+    const interface::Interface
+    on_device_event::Tuple{Function,Any}
 
     function Device(interface::Interface, index::Int)
         device = Ref{Ptr{BGAPI2_Device}}()
         @check BGAPI2_Interface_GetDevice(interface.interface, index - 1, device)
-
-        finalizer(new(device[], interface)) do d
-            isopen(d) && close(d)
-        end
+        new(device[], interface, (empty_device_event_handler, nothing))
     end
 end
 
@@ -29,6 +27,14 @@ function Base.open(d::Device;
     end
 end
 
+function Base.open(f::Function, d::Device; kwargs...)
+    open(d; kwargs...)
+    try
+        f(d)
+    finally
+        close(d)
+    end
+end
 Base.close(d::Device) = @check BGAPI2_Device_Close(d.device)
 
 function Base.isopen(d::Device)
@@ -168,18 +174,17 @@ function is_update_mode_active(d::Device)
     return is_active[] != 0
 end
 
-mutable struct DeviceEventHandler{C,T}
-    callback::C
-    userdata::T
-end
+empty_device_event_handler(_, _) = nothing
 
-function register_device_event_handler(d::Device, handler::DeviceEventHandler)
+function register_device_event_handler(callback::Function, d::Device, userdata=nothing)
+    cb = (callback, userdata)
+    d.on_device_event = cb
     @check BGAPI2_Device_RegisterDeviceEventHandler(d.device,
-        device_event_handler_cfunction(handler), Ref(handler))
+        device_event_handler_cfunction(cb), Ref(cb))
 end
 
-function device_event_handler_wrapper(handler, deviceEvent)
-    handler.callback(deviceEvent, handler.userdata)
+function device_event_handler_wrapper((callback, userdata), deviceEvent)
+    callback(deviceEvent, userdata)
     nothing
 end
 

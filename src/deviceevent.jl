@@ -1,4 +1,4 @@
-struct DeviceEvent
+mutable struct DeviceEvent
     device_event::Ptr{BGAPI2_DeviceEvent}
 
     function DeviceEvent()
@@ -84,5 +84,5 @@ function mem_size(d::DeviceEvent)
 end
 
 function mem_buffer(d::DeviceEvent)
-    UnsafeArray(convert(Ptr{UInt8}, mem_ptr(b)), (mem_size(b),))
+    UnsafeArray(convert(Ptr{UInt8}, mem_ptr(d)), (mem_size(d),))
 end

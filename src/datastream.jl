@@ -1,17 +1,24 @@
 mutable struct DataStream
-    datastream::Ptr{BGAPI2_DataStream}
+    const datastream::Ptr{BGAPI2_DataStream}
+    const device::Device
+    on_new_buffer::Tuple{Function,Any}
 
     function DataStream(device::Device, index::Int)
         datastream = Ref{Ptr{BGAPI2_DataStream}}()
         @check BGAPI2_Device_GetDataStream(device.device, index - 1, datastream)
-
-        finalizer(new(datastream[])) do d
-            close(d)
-        end
+        new(datastream[], device, (empty_on_new_buffer_event_handler, nothing))
     end
 end
 
 Base.open(d::DataStream) = @check BGAPI2_DataStream_Open(d.datastream)
+function Base.open(f::Function, d::DataStream)
+    open(d)
+    try
+        f(d)
+    finally
+        close(d)
+    end
+end
 Base.close(d::DataStream) = @check BGAPI2_DataStream_Close(d.datastream)
 
 function Base.isopen(d::DataStream)
@@ -120,27 +127,31 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", d::DataStream)
     println(io, "DataStream: $(id(d))")
+    if !isopen(d)
+        println(io, "  Is Open: false")
+        return
+    end
+    println(io, "  Is Open: true")
     println(io, "  TL Type: $(tl_type(d))")
     println(io, "  Defines Payload Size: $(defines_payload_size(d))")
     println(io, "  Is Grabbing: $(is_grabbing(d))")
 end
 
-mutable struct EventHandler{C,T}
-    callback::C
-    userdata::T
-end
+empty_on_new_buffer_event_handler(_, _) = nothing
 
-function register_new_buffer_event_handler(d::DataStream, handler::EventHandler)
+function register_new_buffer_event_handler(callback::Function, d::DataStream, userdata=nothing)
+    cb = (callback, userdata)
+    d.on_new_buffer = cb
     @check BGAPI2_DataStream_RegisterNewBufferEventHandler(d.datastream,
-        new_buffer_event_handler_cfunction(handler), Ref(handler))
+        new_buffer_event_handler_cfunction(cb), Ref(cb))
 end
 
-function new_buffer_event_handler_wrapper(handler, pBuffer)
+function new_buffer_event_handler_wrapper((callback, userdata), pBuffer)
     user_ptr = Ref{Ptr{Cvoid}}()
     @check BGAPI2_Buffer_GetUserPtr(pBuffer, user_ptr)
     b = unsafe_pointer_to_objref(user_ptr[])
     GC.@preserve b begin
-        handler.callback(b, handler.userdata)
+        callback(b, userdata)
     end
     nothing
 end

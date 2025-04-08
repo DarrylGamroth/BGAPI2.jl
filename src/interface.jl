@@ -1,18 +1,25 @@
 mutable struct Interface
-    interface::Ptr{BGAPI2_Interface}
-    system::System
+    const interface::Ptr{BGAPI2_Interface}
+    const system::System
+    on_pnp_event::Tuple{Function,Any}
 
     function Interface(system::System, index::Int)
         interface = Ref{Ptr{BGAPI2_Interface}}()
         @check BGAPI2_System_GetInterface(system.system, index - 1, interface)
 
-        finalizer(new(interface[], system)) do i
-            isopen(i) && close(i)
-        end
+        new(interface[], system, (empty_pnp_event_handler, nothing))
     end
 end
 
 Base.open(i::Interface) = @check BGAPI2_Interface_Open(i.interface)
+function Base.open(f::Function, i::Interface)
+    open(i)
+    try
+        f(i)
+    finally
+        close(i)
+    end
+end
 Base.close(i::Interface) = @check BGAPI2_Interface_Close(i.interface)
 
 function Base.isopen(i::Interface)
@@ -63,18 +70,17 @@ function cancel_pnp_event(i::Interface)
     @check BGAPI2_Interface_CancelPnPEvent(i.interface)
 end
 
-mutable struct PnPEventHandler{C,T}
-    callback::C
-    userdata::T
-end
+empty_pnp_event_handler(_, _) = nothing
 
-function register_new_pnp_event_handler(i::Interface, handler::PnPEventHandler)
+function register_pnp_event_handler(callback::Function, i::Interface, userdata=nothing)
+    cb = (callback, userdata)
+    i.on_pnp_event = cb
     @check BGAPI2_Interface_RegisterPnPEventHandler(i.interface,
-        pnp_event_handler_cfunction(handler), Ref(handler))
+        pnp_event_handler_cfunction(cb), Ref(cb))
 end
 
-function pnp_event_handler_wrapper(handler, pnpEvent)
-    handler.callback(PnPEvent(pnpEvent), handler.userdata)
+function pnp_event_handler_wrapper((callback, userdata), pnpEvent)
+    callback(PnPEvent(pnpEvent), userdata)
     nothing
 end
 
