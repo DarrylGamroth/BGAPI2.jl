@@ -38,7 +38,7 @@ end
 function event_mode(d::DeviceEvent)
     mode = Ref{BGAPI2_EventMode}()
     @check BGAPI2_DeviceEvent_GetEventMode(d.device_event, mode)
-    return EventMode.T(mode[])
+    return convert(EventMode.T, mode[])
 end
 
 function name(d::DeviceEvent)
@@ -85,4 +85,13 @@ end
 
 function mem_buffer(d::DeviceEvent)
     UnsafeArray(convert(Ptr{UInt8}, mem_ptr(d)), (mem_size(d),))
+end
+
+function Base.show(io::IO, ::MIME"text/plain", d::DeviceEvent)
+    println(io, "DeviceEvent")
+    println(io, "  Name: ", name(d))
+    println(io, "  Display Name: ", display_name(d))
+    println(io, "  ID: ", id(d))
+    println(io, "  Timestamp: ", timestamp(d))
+    println(io, "  Event Mode: ", event_mode(d))
 end
