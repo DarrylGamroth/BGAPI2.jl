@@ -52,7 +52,7 @@ end
 function new_buffer_event_mode(d::DataStream)
     mode = Ref{BGAPI2_EventMode}()
     @check BGAPI2_DataStream_GetNewBufferEventMode(d.datastream, mode)
-    return EventMode.T(mode[])
+    return convert(EventMode.T, mode[])
 end
 
 function id(d::DataStream)
@@ -143,7 +143,7 @@ function register_new_buffer_event_handler(callback::Function, d::DataStream, us
     cb = (callback, userdata)
     d.on_new_buffer = cb
     @check BGAPI2_DataStream_RegisterNewBufferEventHandler(d.datastream,
-        new_buffer_event_handler_cfunction(cb), Ref(cb))
+        Ref(cb), new_buffer_event_handler_cfunction(cb))
 end
 
 function new_buffer_event_handler_wrapper((callback, userdata), pBuffer)
@@ -217,7 +217,8 @@ function announce_buffer(bl::BufferList, buffer::Buffer)
 end
 
 function revoke_buffer(bl::BufferList, buffer::Buffer)
-    @check BGAPI2_DataStream_RevokeBuffer(bl.datastream.datastream, buffer.buffer, buffer.userdata)
+    userdata = Ref{Ptr{Cvoid}}()
+    @check BGAPI2_DataStream_RevokeBuffer(bl.datastream.datastream, buffer.buffer, userdata)
 end
 
 function queue_buffer(bl::BufferList, buffer::Buffer)

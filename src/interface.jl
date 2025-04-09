@@ -57,7 +57,7 @@ end
 function pnp_event_mode(i::Interface)
     mode = Ref{BGAPI2_EventMode}()
     @check BGAPI2_Interface_GetPnPEventMode(i.interface, mode)
-    return EventMode.T(mode[])
+    return convert(EventMode.T, mode[])
 end
 
 function PnPEvent(i::Interface, timeout::Int64=-1)
@@ -76,7 +76,7 @@ function register_pnp_event_handler(callback::Function, i::Interface, userdata=n
     cb = (callback, userdata)
     i.on_pnp_event = cb
     @check BGAPI2_Interface_RegisterPnPEventHandler(i.interface,
-        pnp_event_handler_cfunction(cb), Ref(cb))
+        Ref(cb), pnp_event_handler_cfunction(cb))
 end
 
 function pnp_event_handler_wrapper((callback, userdata), pnpEvent)

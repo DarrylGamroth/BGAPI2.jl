@@ -61,6 +61,16 @@ function node_list(d::Device)
     return NodeMap(node_map[])
 end
 
+function device_event_mode!(d::Device, mode::EventMode.T)
+    @check BGAPI2_Device_SetDeviceEventMode(d.device, mode)
+end
+
+function device_event_mode(d::Device)
+    mode = Ref{BGAPI2_EventMode}()
+    @check BGAPI2_Device_GetDeviceEventMode(d.device, mode)
+    return convert(EventMode.T, mode[])
+end
+
 function DeviceEvent(d::Device, timeout::Int64=-1)
     device_event = Ref{Ptr{BGAPI2_DeviceEvent}}()
     @check BGAPI2_Device_GetDeviceEvent(d.device, device_event, reinterpret(UInt64, timeout))
@@ -180,7 +190,7 @@ function register_device_event_handler(callback::Function, d::Device, userdata=n
     cb = (callback, userdata)
     d.on_device_event = cb
     @check BGAPI2_Device_RegisterDeviceEventHandler(d.device,
-        device_event_handler_cfunction(cb), Ref(cb))
+        Ref(cb), device_event_handler_cfunction(cb))
 end
 
 function device_event_handler_wrapper((callback, userdata), deviceEvent)
