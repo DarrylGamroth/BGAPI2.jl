@@ -14,7 +14,7 @@ using UnsafeArrays
 end
 
 Base.convert(::Type{BGAPI2_EventMode}, event_mode::EventMode.T) = BGAPI2_EventMode(Integer(event_mode))
-Base.convert(::Type{EventMode.T}, event_mode::BGAPI2_EventMode) = EventMode.T(event_mode)
+Base.convert(::Type{EventMode.T}, event_mode::BGAPI2_EventMode) = EventMode.T(Integer(event_mode))
 
 include("exceptions.jl")
 include("buffer.jl")
