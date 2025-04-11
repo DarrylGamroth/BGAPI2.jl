@@ -125,7 +125,7 @@ function tl_type(s::System)
     return StringView(@view buf[1:string_length[]-1])
 end
 
-function file_name(s::System)
+function filename(s::System)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_System_GetFileName(s.system, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
