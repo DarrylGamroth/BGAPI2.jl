@@ -28,9 +28,7 @@ function Base.isopen(i::Interface)
     return is_open[] != 0
 end
 
-function get_parent(i::Interface)
-    return i.system
-end
+Base.parent(i::Interface) = i.system
 
 function node(i::Interface, name::AbstractString)
     node = Ref{Ptr{BGAPI2_Node}}()

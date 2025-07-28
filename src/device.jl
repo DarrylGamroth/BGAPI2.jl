@@ -43,6 +43,8 @@ function Base.isopen(d::Device)
     return is_open[] != 0
 end
 
+Base.parent(d::Device) = d.interface
+
 function node(d::Device, name::AbstractString)
     node = Ref{Ptr{BGAPI2_Node}}()
     @check BGAPI2_Device_GetNode(d.device, name, node)

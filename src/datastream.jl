@@ -27,6 +27,8 @@ function Base.isopen(d::DataStream)
     return is_open[] != 0
 end
 
+Base.parent(d::DataStream) = d.device
+
 function node(d::DataStream, name::AbstractString)
     node = Ref{Ptr{BGAPI2_Node}}()
     @check BGAPI2_DataStream_GetNode(d.datastream, name, node)
