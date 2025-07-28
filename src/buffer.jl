@@ -228,7 +228,7 @@ function chunk_layout_id(b::Buffer)
     return chunk_layout_id[]
 end
 
-function filename(b::Buffer)
+function file_name(b::Buffer)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Buffer_GetFileName(b.buffer, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
