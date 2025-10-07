@@ -15,9 +15,9 @@ function release(d::DeviceEvent)
     @check BGAPI2_ReleaseDeviceEvent(d.device_event)
 end
 
-function node(d::DeviceEvent)
+function node(d::DeviceEvent, name::AbstractString)
     node = Ref{Ptr{BGAPI2_Node}}()
-    @check BGAPI2_DeviceEvent_GetNode(d.device_event, node)
+    @check BGAPI2_DeviceEvent_GetNode(d.device_event, name, node)
     return Node(node[])
 end
 
