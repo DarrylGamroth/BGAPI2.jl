@@ -11,7 +11,7 @@ struct PnPEvent
     end
 end
 
-function release!(p::PnPEvent)
+function release(p::PnPEvent)
     @check BGAPI2_ReleasePnPEvent(p.pnp_event)
 end
 
