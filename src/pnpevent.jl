@@ -1,16 +1,18 @@
-mutable struct PnPEvent
+struct PnPEvent
     pnp_event::Ptr{BGAPI2_PnPEvent}
-    
+
     function PnPEvent()
         pnp_event = Ref{Ptr{BGAPI2_PnPEvent}}()
         @check BGAPI2_CreatePnPEvent(pnp_event)
-        finalizer(new(pnp_event[])) do p
-            @check BGAPI2_ReleasePnPEvent(p.pnp_event)
-        end
+        new(pnp_event[])
     end
     function PnPEvent(p::Ptr{BGAPI2_PnPEvent})
         new(p)
     end
+end
+
+function release!(p::PnPEvent)
+    @check BGAPI2_ReleasePnPEvent(p.pnp_event)
 end
 
 function serial_number(p::PnPEvent)

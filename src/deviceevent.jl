@@ -1,16 +1,18 @@
-mutable struct DeviceEvent
+struct DeviceEvent
     device_event::Ptr{BGAPI2_DeviceEvent}
 
     function DeviceEvent()
         device_event = Ref{Ptr{BGAPI2_DeviceEvent}}()
         @check BGAPI2_CreateDeviceEvent(device_event)
-        finalizer(new(device_event[])) do d
-            @check BGAPI2_ReleaseDeviceEvent(d.device_event)
-        end
+        new(device_event[])
     end
     function DeviceEvent(d::Ptr{BGAPI2_DeviceEvent})
         new(d)
     end
+end
+
+function release(d::DeviceEvent)
+    @check BGAPI2_ReleaseDeviceEvent(d.device_event)
 end
 
 function node(d::DeviceEvent)

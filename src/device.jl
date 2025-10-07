@@ -73,10 +73,9 @@ function device_event_mode(d::Device)
     return convert(EventMode.T, mode[])
 end
 
-function DeviceEvent(d::Device, timeout::Int64=-1)
-    device_event = Ref{Ptr{BGAPI2_DeviceEvent}}()
-    @check BGAPI2_Device_GetDeviceEvent(d.device, device_event, reinterpret(UInt64, timeout))
-    return DeviceEvent(device_event[])
+function device_event(d::Device, e::DeviceEvent, timeout::Int64=-1)
+    @check BGAPI2_Device_GetDeviceEvent(d.device, e.device_event, reinterpret(UInt64, timeout))
+    return e
 end
 
 function payload_size(d::Device)
@@ -196,7 +195,7 @@ function register_device_event_handler(callback::Function, d::Device, userdata=n
 end
 
 function device_event_handler_wrapper((callback, userdata), deviceEvent)
-    callback(deviceEvent, userdata)
+    callback(DeviceEvent(deviceEvent), userdata)
     nothing
 end
 

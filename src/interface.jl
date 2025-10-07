@@ -58,10 +58,9 @@ function pnp_event_mode(i::Interface)
     return convert(EventMode.T, mode[])
 end
 
-function PnPEvent(i::Interface, timeout::Int64=-1)
-    event = Ref{Ptr{BGAPI2_PnPEvent}}()
-    @check BGAPI2_Interface_GetPnPEvent(i.interface, event, reinterpret(UInt64, timeout))
-    return PnPEvent(event[])
+function pnp_event(i::Interface, p::PnPEvent, timeout::Int64=-1)
+    @check BGAPI2_Interface_GetPnPEvent(i.interface, p.pnp_event, reinterpret(UInt64, timeout))
+    return p
 end
 
 function cancel_pnp_event(i::Interface)
