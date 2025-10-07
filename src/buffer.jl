@@ -1,16 +1,21 @@
-mutable struct Buffer
+struct Buffer
     buffer::Ptr{BGAPI2_Buffer}
-    Buffer(buffer::Ptr{BGAPI2_Buffer}) = Buffer(buffer)
+
     function Buffer()
         b = new()
         buffer = Ref{Ptr{BGAPI2_Buffer}}()
         @check BGAPI2_CreateBufferWithUserPtr(buffer, Ref(b))
         b.buffer = buffer[]
-        finalizer(b) do b
-            user_obj = Ref{Ptr{Cvoid}}()
-            @check BGAPI2_DeleteBuffer(b.buffer, user_obj)
-        end
+        return b
     end
+    function Buffer(p::Ptr{BGAPI2_Buffer})
+        new(p)
+    end
+end
+
+function release(b::Buffer)
+    user_obj = Ref{Ptr{Cvoid}}(C_NULL)
+    @check BGAPI2_DeleteBuffer(b.buffer, user_obj)
 end
 
 function node(b::Buffer, name::AbstractString)
