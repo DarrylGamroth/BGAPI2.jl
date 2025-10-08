@@ -276,7 +276,7 @@ function selected_features(n::Node)
     return NodeMap(selected_features[])
 end
 
-function length(n::Node)
+function Base.length(n::Node)
     length = Ref{bo_int64}()
     @check BGAPI2_Node_GetLength(n.node, length)
     return length[]
