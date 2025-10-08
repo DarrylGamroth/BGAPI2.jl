@@ -1,4 +1,4 @@
-struct Buffer
+mutable struct Buffer
     buffer::Ptr{BGAPI2_Buffer}
 
     function Buffer()

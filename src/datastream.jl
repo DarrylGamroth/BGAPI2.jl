@@ -180,12 +180,14 @@ end
 
 function Base.delete!(bl::BufferList, b::Buffer)
     revoke_buffer(bl, b)
+    release(b)
     deleteat!(bl.buffers, findfirst(==(b), bl.buffers))
 end
 
 function Base.empty!(bl::BufferList)
     for b in bl.buffers
         revoke_buffer(bl, b)
+        release(b)
     end
     empty!(bl.buffers)
 end
