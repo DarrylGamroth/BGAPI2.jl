@@ -76,7 +76,7 @@ end
 
 function image_buffer(b::Buffer)
     is_image_present(b) || throw(ArgumentError("Image not present"))
-    return UnsafeArray(mem_ptr(b) + image_offset(b), (image_length(b),))
+    return UnsafeArray(convert(Ptr{UInt8}, mem_ptr(b)) + image_offset(b), (image_length(b),))
 end
 
 function user_ptr(b::Buffer)
