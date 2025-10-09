@@ -53,3 +53,30 @@ function Base.getindex(nm::NodeMap, name::AbstractString)
 end
 
 Base.getindex(nm::NodeMap, name::Symbol) = node(nm, string(name))
+
+Base.haskey(nm::NodeMap, name::AbstractString) = is_present(nm, name)
+Base.haskey(nm::NodeMap, name::Symbol) = is_present(nm, string(name))
+
+function Base.get(nm::NodeMap, name::AbstractString, default)
+    haskey(nm, name) ? nm[name] : default
+end
+
+function Base.get(nm::NodeMap, name::Symbol, default)
+    haskey(nm, name) ? nm[name] : default
+end
+
+function Base.keys(nm::NodeMap)
+    [name(node_by_index(nm, i)) for i in 1:length(nm)]
+end
+
+function Base.values(nm::NodeMap)
+    [node_by_index(nm, i) for i in 1:length(nm)]
+end
+
+function Base.pairs(nm::NodeMap)
+    [name(n) => n for n in nm]
+end
+
+Base.in(name::AbstractString, nm::NodeMap) = haskey(nm, name)
+Base.in(name::Symbol, nm::NodeMap) = haskey(nm, name)
+Base.in(pair::Pair, nm::NodeMap) = haskey(nm, first(pair)) && nm[first(pair)] == last(pair)
