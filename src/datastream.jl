@@ -112,7 +112,19 @@ function filled_buffer(d::DataStream, timeout::Int64=-1)
     @check BGAPI2_DataStream_GetFilledBuffer(d.datastream, buffer, reinterpret(UInt64, timeout))
     user_ptr = Ref{Ptr{Cvoid}}()
     @check BGAPI2_Buffer_GetUserPtr(buffer[], user_ptr)
-    unsafe_pointer_to_objref(user_ptr[])
+    unsafe_pointer_to_objref(user_ptr[])::Buffer
+end
+
+function filled_buffer_nothrow(d::DataStream, timeout::Int64=-1)
+    buffer = Ref{Ptr{BGAPI2_Buffer}}()
+    status = BGAPI2_DataStream_GetFilledBuffer(d.datastream, buffer, reinterpret(UInt64, timeout))
+    if status == LibBGAPI2.BGAPI2_RESULT_TIMEOUT
+        return nothing
+    end
+    check_status(status)
+    user_ptr = Ref{Ptr{Cvoid}}()
+    @check BGAPI2_Buffer_GetUserPtr(buffer[], user_ptr)
+    unsafe_pointer_to_objref(user_ptr[])::Buffer
 end
 
 function cancel_get_filled_buffer(d::DataStream)
@@ -124,7 +136,7 @@ function Base.getindex(d::DataStream, index)
     @check BGAPI2_DataStream_GetBufferID(d.datastream, index - 1, buffer)
     user_ptr = Ref{Ptr{Cvoid}}()
     @check BGAPI2_Buffer_GetUserPtr(buffer[], user_ptr)
-    unsafe_pointer_to_objref(user_ptr[])
+    unsafe_pointer_to_objref(user_ptr[])::Buffer
 end
 
 function Base.show(io::IO, ::MIME"text/plain", d::DataStream)
@@ -151,7 +163,7 @@ end
 function new_buffer_event_handler_wrapper((callback, userdata), pBuffer)
     user_ptr = Ref{Ptr{Cvoid}}()
     @check BGAPI2_Buffer_GetUserPtr(pBuffer, user_ptr)
-    b = unsafe_pointer_to_objref(user_ptr[])
+    b = unsafe_pointer_to_objref(user_ptr[])::Buffer
     GC.@preserve b begin
         callback(b, userdata)
     end

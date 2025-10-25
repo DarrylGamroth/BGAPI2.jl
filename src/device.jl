@@ -78,6 +78,15 @@ function device_event(d::Device, e::DeviceEvent, timeout::Int64=-1)
     return e
 end
 
+function device_event_nothrow(d::Device, e::DeviceEvent, timeout::Int64=-1)
+    status = BGAPI2_Device_GetDeviceEvent(d.device, e.device_event, reinterpret(UInt64, timeout))
+    if status == LibBGAPI2.BGAPI2_RESULT_TIMEOUT
+        return nothing
+    end
+    check_status(status)
+    return e
+end
+
 function payload_size(d::Device)
     payload_size = Ref{bo_uint64}()
     @check BGAPI2_Device_GetPayloadSize(d.device, payload_size)
