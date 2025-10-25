@@ -320,17 +320,17 @@ get(::Type{T}, n::Node) where {T<:Bool} = bool(n)
 get(::Type{T}, n::Node, length::Int) where {T<:AbstractVector{UInt8}} = get(n, length)
 get(::Type{T}, n::Node, buffer::AbstractVector{UInt8}) where {T<:AbstractVector{UInt8}} = get(n, buffer)
 
-function get(n::Node)
+function Base.eltype(n::Node)
     i = interface(n)
-    if i == BGAPI2_NODEINTERFACE_FLOAT
-        return double(n)
-    elseif i == BGAPI2_NODEINTERFACE_INTEGER
-        return int(n)
-    elseif i == BGAPI2_NODEINTERFACE_BOOLEAN
-        return bool(n)
-    else
-        return value(n)
-    end
+    i == BGAPI2_NODEINTERFACE_FLOAT ? Float64 :
+    i == BGAPI2_NODEINTERFACE_INTEGER ? Int64 :
+    i == BGAPI2_NODEINTERFACE_BOOLEAN ? Bool :
+    AbstractString
+end
+
+function get(n::Node)
+    T = Base.eltype(n)
+    get(T, n)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", n::Node)
