@@ -47,7 +47,7 @@ function id(b::Buffer)
     @check BGAPI2_Buffer_GetID(b.buffer, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Buffer_GetID(b.buffer, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function tl_type(b::Buffer)
@@ -55,7 +55,7 @@ function tl_type(b::Buffer)
     @check BGAPI2_Buffer_GetTLType(b.buffer, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Buffer_GetTLType(b.buffer, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function mem_ptr(b::Buffer)
@@ -192,7 +192,7 @@ function payload_type(b::Buffer)
     @check BGAPI2_Buffer_GetPayloadType(b.buffer, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Buffer_GetPayloadType(b.buffer, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function pixel_format(b::Buffer)
@@ -200,7 +200,7 @@ function pixel_format(b::Buffer)
     @check BGAPI2_Buffer_GetPixelFormat(b.buffer, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Buffer_GetPixelFormat(b.buffer, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function delivered_height(b::Buffer)
@@ -238,5 +238,5 @@ function file_name(b::Buffer)
     @check BGAPI2_Buffer_GetFileName(b.buffer, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Buffer_GetFileName(b.buffer, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end

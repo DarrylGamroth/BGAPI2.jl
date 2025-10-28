@@ -48,7 +48,7 @@ function name(d::DeviceEvent)
     @check BGAPI2_DeviceEvent_GetName(d.device_event, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_DeviceEvent_GetName(d.device_event, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function display_name(d::DeviceEvent)
@@ -56,7 +56,7 @@ function display_name(d::DeviceEvent)
     @check BGAPI2_DeviceEvent_GetDisplayName(d.device_event, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_DeviceEvent_GetDisplayName(d.device_event, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function timestamp(d::DeviceEvent)
@@ -70,7 +70,7 @@ function id(d::DeviceEvent)
     @check BGAPI2_DeviceEvent_GetID(d.device_event, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_DeviceEvent_GetID(d.device_event, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function mem_ptr(d::DeviceEvent)

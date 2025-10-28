@@ -116,7 +116,7 @@ function id(d::Device)
     @check BGAPI2_Device_GetID(d.device, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Device_GetID(d.device, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function vendor(d::Device)
@@ -124,7 +124,7 @@ function vendor(d::Device)
     @check BGAPI2_Device_GetVendor(d.device, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Device_GetVendor(d.device, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function model(d::Device)
@@ -132,7 +132,7 @@ function model(d::Device)
     @check BGAPI2_Device_GetModel(d.device, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Device_GetModel(d.device, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function serial_number(d::Device)
@@ -140,7 +140,7 @@ function serial_number(d::Device)
     @check BGAPI2_Device_GetSerialNumber(d.device, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Device_GetSerialNumber(d.device, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function tl_type(d::Device)
@@ -148,7 +148,7 @@ function tl_type(d::Device)
     @check BGAPI2_Device_GetTLType(d.device, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Device_GetTLType(d.device, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function display_name(d::Device)
@@ -156,7 +156,7 @@ function display_name(d::Device)
     @check BGAPI2_Device_GetDisplayName(d.device, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Device_GetDisplayName(d.device, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function access_status(d::Device)
@@ -164,7 +164,7 @@ function access_status(d::Device)
     @check BGAPI2_Device_GetAccessStatus(d.device, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Device_GetAccessStatus(d.device, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function Base.show(io::IO, ::MIME"text/plain", d::Device)

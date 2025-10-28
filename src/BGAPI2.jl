@@ -4,7 +4,6 @@ include("LibBGAPI2.jl")
 using .LibBGAPI2
 
 using EnumX
-using StringViews
 using UnsafeArrays
 
 export Abort,

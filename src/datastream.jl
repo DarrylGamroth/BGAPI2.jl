@@ -62,7 +62,7 @@ function id(d::DataStream)
     @check BGAPI2_DataStream_GetID(d.datastream, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_DataStream_GetID(d.datastream, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function payload_size(d::DataStream)
@@ -88,7 +88,7 @@ function tl_type(d::DataStream)
     @check BGAPI2_DataStream_GetTLType(d.datastream, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_DataStream_GetTLType(d.datastream, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function start_acquisition(d::DataStream, num_to_acquire::Int)

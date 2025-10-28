@@ -90,7 +90,7 @@ function id(i::Interface)
     @check BGAPI2_Interface_GetID(i.interface, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Interface_GetID(i.interface, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function display_name(i::Interface)
@@ -98,7 +98,7 @@ function display_name(i::Interface)
     @check BGAPI2_Interface_GetDisplayName(i.interface, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Interface_GetDisplayName(i.interface, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function tl_type(i::Interface)
@@ -106,7 +106,7 @@ function tl_type(i::Interface)
     @check BGAPI2_Interface_GetTLType(i.interface, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_Interface_GetTLType(i.interface, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function Base.show(io::IO, ::MIME"text/plain", i::Interface)

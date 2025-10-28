@@ -90,7 +90,7 @@ function id(s::System)
     @check BGAPI2_System_GetID(s.system, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_System_GetID(s.system, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function vendor(s::System)
@@ -98,7 +98,7 @@ function vendor(s::System)
     @check BGAPI2_System_GetVendor(s.system, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_System_GetVendor(s.system, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function model(s::System)
@@ -106,7 +106,7 @@ function model(s::System)
     @check BGAPI2_System_GetModel(s.system, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_System_GetModel(s.system, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function version(s::System)
@@ -114,7 +114,7 @@ function version(s::System)
     @check BGAPI2_System_GetVersion(s.system, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_System_GetVersion(s.system, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function tl_type(s::System)
@@ -122,7 +122,7 @@ function tl_type(s::System)
     @check BGAPI2_System_GetTLType(s.system, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_System_GetTLType(s.system, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function file_name(s::System)
@@ -130,7 +130,7 @@ function file_name(s::System)
     @check BGAPI2_System_GetFileName(s.system, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_System_GetFileName(s.system, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function path_name(s::System)
@@ -138,7 +138,7 @@ function path_name(s::System)
     @check BGAPI2_System_GetPathName(s.system, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_System_GetPathName(s.system, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function display_name(s::System)
@@ -146,7 +146,7 @@ function display_name(s::System)
     @check BGAPI2_System_GetDisplayName(s.system, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_System_GetDisplayName(s.system, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function Base.show(io::IO, ::MIME"text/plain", s::System)

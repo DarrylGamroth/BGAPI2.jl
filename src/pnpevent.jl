@@ -20,7 +20,7 @@ function serial_number(p::PnPEvent)
     @check BGAPI2_PnPEvent_GetSerialNumber(p.pnp_event, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_PnPEvent_GetSerialNumber(p.pnp_event, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
 
 function type(p::PnPEvent)
@@ -34,5 +34,5 @@ function id(p::PnPEvent)
     @check BGAPI2_PnPEvent_GetID(p.pnp_event, C_NULL, string_length)
     buf = Vector{UInt8}(undef, string_length[])
     @check BGAPI2_PnPEvent_GetID(p.pnp_event, pointer(buf), string_length)
-    return StringView(@view buf[1:string_length[]-1])
+    return String(@view buf[1:string_length[]-1])
 end
