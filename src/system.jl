@@ -1,16 +1,17 @@
-struct System
-    system::Ptr{BGAPI2_System}
+mutable struct System
+    const system::Ptr{BGAPI2_System}
+    string_buffer::Vector{UInt8}
 
     function System(file_path::AbstractString)
         system = Ref{Ptr{BGAPI2_System}}()
         @check BGAPI2_LoadSystemFromPath(file_path, system)
-        new(system[])
+        new(system[], Vector{UInt8}(undef, 256))
     end
 
     function System(index::Int)
         system = Ref{Ptr{BGAPI2_System}}()
         @check BGAPI2_GetSystem(index - 1, system)
-        new(system[])
+        new(system[], Vector{UInt8}(undef, 256))
     end
 end
 
@@ -88,65 +89,65 @@ end
 function id(s::System)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_System_GetID(s.system, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_System_GetID(s.system, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(s.string_buffer, string_length[])
+    @check BGAPI2_System_GetID(s.system, pointer(s.string_buffer), string_length)
+    return String(@view s.string_buffer[1:string_length[]-1])
 end
 
 function vendor(s::System)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_System_GetVendor(s.system, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_System_GetVendor(s.system, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(s.string_buffer, string_length[])
+    @check BGAPI2_System_GetVendor(s.system, pointer(s.string_buffer), string_length)
+    return String(@view s.string_buffer[1:string_length[]-1])
 end
 
 function model(s::System)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_System_GetModel(s.system, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_System_GetModel(s.system, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(s.string_buffer, string_length[])
+    @check BGAPI2_System_GetModel(s.system, pointer(s.string_buffer), string_length)
+    return String(@view s.string_buffer[1:string_length[]-1])
 end
 
 function version(s::System)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_System_GetVersion(s.system, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_System_GetVersion(s.system, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(s.string_buffer, string_length[])
+    @check BGAPI2_System_GetVersion(s.system, pointer(s.string_buffer), string_length)
+    return String(@view s.string_buffer[1:string_length[]-1])
 end
 
 function tl_type(s::System)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_System_GetTLType(s.system, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_System_GetTLType(s.system, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(s.string_buffer, string_length[])
+    @check BGAPI2_System_GetTLType(s.system, pointer(s.string_buffer), string_length)
+    return String(@view s.string_buffer[1:string_length[]-1])
 end
 
 function file_name(s::System)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_System_GetFileName(s.system, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_System_GetFileName(s.system, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(s.string_buffer, string_length[])
+    @check BGAPI2_System_GetFileName(s.system, pointer(s.string_buffer), string_length)
+    return String(@view s.string_buffer[1:string_length[]-1])
 end
 
 function path_name(s::System)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_System_GetPathName(s.system, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_System_GetPathName(s.system, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(s.string_buffer, string_length[])
+    @check BGAPI2_System_GetPathName(s.system, pointer(s.string_buffer), string_length)
+    return String(@view s.string_buffer[1:string_length[]-1])
 end
 
 function display_name(s::System)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_System_GetDisplayName(s.system, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_System_GetDisplayName(s.system, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(s.string_buffer, string_length[])
+    @check BGAPI2_System_GetDisplayName(s.system, pointer(s.string_buffer), string_length)
+    return String(@view s.string_buffer[1:string_length[]-1])
 end
 
 function Base.show(io::IO, ::MIME"text/plain", s::System)

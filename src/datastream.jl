@@ -2,11 +2,12 @@ mutable struct DataStream
     const datastream::Ptr{BGAPI2_DataStream}
     const device::Device
     on_new_buffer::Tuple{Function,Any}
+    string_buffer::Vector{UInt8}
 
     function DataStream(device::Device, index::Int)
         datastream = Ref{Ptr{BGAPI2_DataStream}}()
         @check BGAPI2_Device_GetDataStream(device.device, index - 1, datastream)
-        new(datastream[], device, (empty_on_new_buffer_event_handler, nothing))
+        new(datastream[], device, (empty_on_new_buffer_event_handler, nothing), Vector{UInt8}(undef, 256))
     end
 end
 
@@ -60,9 +61,9 @@ end
 function id(d::DataStream)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_DataStream_GetID(d.datastream, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_DataStream_GetID(d.datastream, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_DataStream_GetID(d.datastream, pointer(d.string_buffer), string_length)
+    return String(@view d.string_buffer[1:string_length[]-1])
 end
 
 function payload_size(d::DataStream)
@@ -86,9 +87,9 @@ end
 function tl_type(d::DataStream)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_DataStream_GetTLType(d.datastream, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_DataStream_GetTLType(d.datastream, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_DataStream_GetTLType(d.datastream, pointer(d.string_buffer), string_length)
+    return Symbol(@view d.string_buffer[1:string_length[]-1])
 end
 
 function start_acquisition(d::DataStream, num_to_acquire::Int)

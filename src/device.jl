@@ -2,11 +2,12 @@ mutable struct Device
     const device::Ptr{BGAPI2_Device}
     const interface::Interface
     on_device_event::Tuple{Function,Any}
+    string_buffer::Vector{UInt8}
 
     function Device(interface::Interface, index::Int)
         device = Ref{Ptr{BGAPI2_Device}}()
         @check BGAPI2_Interface_GetDevice(interface.interface, index - 1, device)
-        new(device[], interface, (empty_device_event_handler, nothing))
+        new(device[], interface, (empty_device_event_handler, nothing), Vector{UInt8}(undef, 256))
     end
 end
 
@@ -114,57 +115,57 @@ end
 function id(d::Device)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Device_GetID(d.device, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Device_GetID(d.device, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_Device_GetID(d.device, pointer(d.string_buffer), string_length)
+    return String(@view d.string_buffer[1:string_length[]-1])
 end
 
 function vendor(d::Device)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Device_GetVendor(d.device, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Device_GetVendor(d.device, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_Device_GetVendor(d.device, pointer(d.string_buffer), string_length)
+    return String(@view d.string_buffer[1:string_length[]-1])
 end
 
 function model(d::Device)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Device_GetModel(d.device, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Device_GetModel(d.device, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_Device_GetModel(d.device, pointer(d.string_buffer), string_length)
+    return String(@view d.string_buffer[1:string_length[]-1])
 end
 
 function serial_number(d::Device)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Device_GetSerialNumber(d.device, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Device_GetSerialNumber(d.device, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_Device_GetSerialNumber(d.device, pointer(d.string_buffer), string_length)
+    return String(@view d.string_buffer[1:string_length[]-1])
 end
 
 function tl_type(d::Device)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Device_GetTLType(d.device, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Device_GetTLType(d.device, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_Device_GetTLType(d.device, pointer(d.string_buffer), string_length)
+    return Symbol(@view d.string_buffer[1:string_length[]-1])
 end
 
 function display_name(d::Device)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Device_GetDisplayName(d.device, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Device_GetDisplayName(d.device, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_Device_GetDisplayName(d.device, pointer(d.string_buffer), string_length)
+    return String(@view d.string_buffer[1:string_length[]-1])
 end
 
 function access_status(d::Device)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Device_GetAccessStatus(d.device, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Device_GetAccessStatus(d.device, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_Device_GetAccessStatus(d.device, pointer(d.string_buffer), string_length)
+    return String(@view d.string_buffer[1:string_length[]-1])
 end
 
 function Base.show(io::IO, ::MIME"text/plain", d::Device)

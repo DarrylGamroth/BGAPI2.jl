@@ -1,13 +1,14 @@
-struct DeviceEvent
+mutable struct DeviceEvent
     device_event::Ptr{BGAPI2_DeviceEvent}
+    string_buffer::Vector{UInt8}
 
     function DeviceEvent()
         device_event = Ref{Ptr{BGAPI2_DeviceEvent}}()
         @check BGAPI2_CreateDeviceEvent(device_event)
-        new(device_event[])
+        new(device_event[], Vector{UInt8}(undef, 64))
     end
     function DeviceEvent(d::Ptr{BGAPI2_DeviceEvent})
-        new(d)
+        new(d, Vector{UInt8}(undef, 64))
     end
 end
 
@@ -46,17 +47,17 @@ end
 function name(d::DeviceEvent)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_DeviceEvent_GetName(d.device_event, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_DeviceEvent_GetName(d.device_event, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_DeviceEvent_GetName(d.device_event, pointer(d.string_buffer), string_length)
+    return String(@view d.string_buffer[1:string_length[]-1])
 end
 
 function display_name(d::DeviceEvent)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_DeviceEvent_GetDisplayName(d.device_event, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_DeviceEvent_GetDisplayName(d.device_event, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_DeviceEvent_GetDisplayName(d.device_event, pointer(d.string_buffer), string_length)
+    return String(@view d.string_buffer[1:string_length[]-1])
 end
 
 function timestamp(d::DeviceEvent)
@@ -68,9 +69,9 @@ end
 function id(d::DeviceEvent)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_DeviceEvent_GetID(d.device_event, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_DeviceEvent_GetID(d.device_event, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(d.string_buffer, string_length[])
+    @check BGAPI2_DeviceEvent_GetID(d.device_event, pointer(d.string_buffer), string_length)
+    return String(@view d.string_buffer[1:string_length[]-1])
 end
 
 function mem_ptr(d::DeviceEvent)

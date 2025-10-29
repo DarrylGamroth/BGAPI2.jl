@@ -1,61 +1,64 @@
-struct Node
-    node::Ptr{BGAPI2_Node}
+mutable struct Node
+    const node::Ptr{BGAPI2_Node}
+    string_buffer::Vector{UInt8}
+
+    Node(node::Ptr{BGAPI2_Node}) = new(node, Vector{UInt8}(undef, 256))
 end
 
 function interface(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetInterface(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetInterface(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetInterface(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function extension(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetExtension(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetExtension(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetExtension(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function tool_tip(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetToolTip(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetToolTip(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetToolTip(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function description(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetDescription(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetDescription(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetDescription(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function name(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetName(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetName(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetName(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function display_name(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetDisplayname(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetDisplayname(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetDisplayname(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function visibility(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetVisibility(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetVisibility(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetVisibility(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function event_id(n::Node)
@@ -85,17 +88,17 @@ end
 function imposed_access_mode(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetImposedAccessMode(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetImposedAccessMode(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetImposedAccessMode(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function current_access_mode(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetCurrentAccessMode(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetCurrentAccessMode(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetCurrentAccessMode(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function is_readable(n::Node)
@@ -113,17 +116,17 @@ end
 function alias(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetAlias(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetAlias(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetAlias(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function value(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetValue(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetValue(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetValue(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function value!(n::Node, value::AbstractString)
@@ -133,9 +136,9 @@ end
 function representation(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetRepresentation(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetRepresentation(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetRepresentation(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function int_min(n::Node)
@@ -175,9 +178,9 @@ end
 function unit(n::Node)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Node_GetUnit(n.node, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Node_GetUnit(n.node, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(n.string_buffer, string_length[])
+    @check BGAPI2_Node_GetUnit(n.node, pointer(n.string_buffer), string_length)
+    return String(@view n.string_buffer[1:string_length[]-1])
 end
 
 function double_min(n::Node)

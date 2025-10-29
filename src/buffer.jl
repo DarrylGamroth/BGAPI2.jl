@@ -1,15 +1,17 @@
 mutable struct Buffer
     buffer::Ptr{BGAPI2_Buffer}
+    string_buffer::Vector{UInt8}
 
     function Buffer()
         b = new()
         buffer = Ref{Ptr{BGAPI2_Buffer}}()
         @check BGAPI2_CreateBufferWithUserPtr(buffer, Ref(b))
         b.buffer = buffer[]
+        b.string_buffer = Vector{UInt8}(undef, 64)
         return b
     end
     function Buffer(p::Ptr{BGAPI2_Buffer})
-        new(p)
+        new(p, Vector{UInt8}(undef, 64))
     end
 end
 
@@ -45,17 +47,17 @@ end
 function id(b::Buffer)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Buffer_GetID(b.buffer, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Buffer_GetID(b.buffer, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(b.string_buffer, string_length[])
+    @check BGAPI2_Buffer_GetID(b.buffer, pointer(b.string_buffer), string_length)
+    return String(@view b.string_buffer[1:string_length[]-1])
 end
 
 function tl_type(b::Buffer)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Buffer_GetTLType(b.buffer, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Buffer_GetTLType(b.buffer, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(b.string_buffer, string_length[])
+    @check BGAPI2_Buffer_GetTLType(b.buffer, pointer(b.string_buffer), string_length)
+    return Symbol(@view b.string_buffer[1:string_length[]-1])
 end
 
 function mem_ptr(b::Buffer)
@@ -190,17 +192,17 @@ end
 function payload_type(b::Buffer)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Buffer_GetPayloadType(b.buffer, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Buffer_GetPayloadType(b.buffer, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(b.string_buffer, string_length[])
+    @check BGAPI2_Buffer_GetPayloadType(b.buffer, pointer(b.string_buffer), string_length)
+    return Symbol(@view b.string_buffer[1:string_length[]-1])
 end
 
 function pixel_format(b::Buffer)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Buffer_GetPixelFormat(b.buffer, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Buffer_GetPixelFormat(b.buffer, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(b.string_buffer, string_length[])
+    @check BGAPI2_Buffer_GetPixelFormat(b.buffer, pointer(b.string_buffer), string_length)
+    return Symbol(@view b.string_buffer[1:string_length[]-1])
 end
 
 function delivered_height(b::Buffer)
@@ -236,7 +238,7 @@ end
 function file_name(b::Buffer)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Buffer_GetFileName(b.buffer, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Buffer_GetFileName(b.buffer, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(b.string_buffer, string_length[])
+    @check BGAPI2_Buffer_GetFileName(b.buffer, pointer(b.string_buffer), string_length)
+    return String(@view b.string_buffer[1:string_length[]-1])
 end

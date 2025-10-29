@@ -2,12 +2,13 @@ mutable struct Interface
     const interface::Ptr{BGAPI2_Interface}
     const system::System
     on_pnp_event::Tuple{Function,Any}
+    string_buffer::Vector{UInt8}
 
     function Interface(system::System, index::Int)
         interface = Ref{Ptr{BGAPI2_Interface}}()
         @check BGAPI2_System_GetInterface(system.system, index - 1, interface)
 
-        new(interface[], system, (empty_pnp_event_handler, nothing))
+        new(interface[], system, (empty_pnp_event_handler, nothing), Vector{UInt8}(undef, 256))
     end
 end
 
@@ -88,25 +89,25 @@ end
 function id(i::Interface)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Interface_GetID(i.interface, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Interface_GetID(i.interface, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(i.string_buffer, string_length[])
+    @check BGAPI2_Interface_GetID(i.interface, pointer(i.string_buffer), string_length)
+    return String(@view i.string_buffer[1:string_length[]-1])
 end
 
 function display_name(i::Interface)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Interface_GetDisplayName(i.interface, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Interface_GetDisplayName(i.interface, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(i.string_buffer, string_length[])
+    @check BGAPI2_Interface_GetDisplayName(i.interface, pointer(i.string_buffer), string_length)
+    return String(@view i.string_buffer[1:string_length[]-1])
 end
 
 function tl_type(i::Interface)
     string_length = Ref{bo_uint64}()
     @check BGAPI2_Interface_GetTLType(i.interface, C_NULL, string_length)
-    buf = Vector{UInt8}(undef, string_length[])
-    @check BGAPI2_Interface_GetTLType(i.interface, pointer(buf), string_length)
-    return String(@view buf[1:string_length[]-1])
+    resize!(i.string_buffer, string_length[])
+    @check BGAPI2_Interface_GetTLType(i.interface, pointer(i.string_buffer), string_length)
+    return String(@view i.string_buffer[1:string_length[]-1])
 end
 
 function Base.show(io::IO, ::MIME"text/plain", i::Interface)
