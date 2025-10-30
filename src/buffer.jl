@@ -57,7 +57,7 @@ function tl_type(b::Buffer)
     @check BGAPI2_Buffer_GetTLType(b.buffer, C_NULL, string_length)
     resize!(b.string_buffer, string_length[])
     @check BGAPI2_Buffer_GetTLType(b.buffer, pointer(b.string_buffer), string_length)
-    return Symbol(@view b.string_buffer[1:string_length[]-1])
+    return Symbol(StringView(@view b.string_buffer[1:string_length[]-1]))
 end
 
 function mem_ptr(b::Buffer)
@@ -194,7 +194,7 @@ function payload_type(b::Buffer)
     @check BGAPI2_Buffer_GetPayloadType(b.buffer, C_NULL, string_length)
     resize!(b.string_buffer, string_length[])
     @check BGAPI2_Buffer_GetPayloadType(b.buffer, pointer(b.string_buffer), string_length)
-    return Symbol(@view b.string_buffer[1:string_length[]-1])
+    return Symbol(StringView(@view b.string_buffer[1:string_length[]-1]))
 end
 
 function pixel_format(b::Buffer)
@@ -202,7 +202,7 @@ function pixel_format(b::Buffer)
     @check BGAPI2_Buffer_GetPixelFormat(b.buffer, C_NULL, string_length)
     resize!(b.string_buffer, string_length[])
     @check BGAPI2_Buffer_GetPixelFormat(b.buffer, pointer(b.string_buffer), string_length)
-    return Symbol(@view b.string_buffer[1:string_length[]-1])
+    return Symbol(StringView(@view b.string_buffer[1:string_length[]-1]))
 end
 
 function delivered_height(b::Buffer)

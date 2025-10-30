@@ -149,7 +149,7 @@ function tl_type(d::Device)
     @check BGAPI2_Device_GetTLType(d.device, C_NULL, string_length)
     resize!(d.string_buffer, string_length[])
     @check BGAPI2_Device_GetTLType(d.device, pointer(d.string_buffer), string_length)
-    return Symbol(@view d.string_buffer[1:string_length[]-1])
+    return Symbol(StringView(@view d.string_buffer[1:string_length[]-1]))
 end
 
 function display_name(d::Device)

@@ -89,7 +89,7 @@ function tl_type(d::DataStream)
     @check BGAPI2_DataStream_GetTLType(d.datastream, C_NULL, string_length)
     resize!(d.string_buffer, string_length[])
     @check BGAPI2_DataStream_GetTLType(d.datastream, pointer(d.string_buffer), string_length)
-    return Symbol(@view d.string_buffer[1:string_length[]-1])
+    return Symbol(StringView(@view d.string_buffer[1:string_length[]-1]))
 end
 
 function start_acquisition(d::DataStream, num_to_acquire::Int)
