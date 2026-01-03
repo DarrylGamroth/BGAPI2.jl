@@ -232,7 +232,7 @@ end
 function enum_mode_list(n::Node)
     enum_node_map = Ref{Ptr{BGAPI2_NodeMap}}()
     @check BGAPI2_Node_GetEnumModeList(n.node, enum_node_map)
-    return NodeMap(enum_mode_list[])
+    return NodeMap(enum_node_map[])
 end
 
 function execute(n::Node)

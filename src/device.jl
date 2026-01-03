@@ -3,11 +3,12 @@ mutable struct Device
     const interface::Interface
     on_device_event::Tuple{Function,Any}
     string_buffer::Vector{UInt8}
+    on_device_event_ref::Union{Nothing, Base.RefValue}
 
     function Device(interface::Interface, index::Int)
         device = Ref{Ptr{BGAPI2_Device}}()
         @check BGAPI2_Interface_GetDevice(interface.interface, index - 1, device)
-        new(device[], interface, (empty_device_event_handler, nothing), Vector{UInt8}(undef, 256))
+        new(device[], interface, (empty_device_event_handler, nothing), Vector{UInt8}(undef, 256), nothing)
     end
 end
 
@@ -200,12 +201,18 @@ empty_device_event_handler(_, _) = nothing
 function register_device_event_handler(callback::Function, d::Device, userdata=nothing)
     cb = (callback, userdata)
     d.on_device_event = cb
+    d.on_device_event_ref = Ref(cb)
     @check BGAPI2_Device_RegisterDeviceEventHandler(d.device,
-        Ref(cb), device_event_handler_cfunction(cb))
+        d.on_device_event_ref, device_event_handler_cfunction(cb))
 end
 
 function device_event_handler_wrapper((callback, userdata), deviceEvent)
-    callback(DeviceEvent(deviceEvent), userdata)
+    try
+        callback(DeviceEvent(deviceEvent), userdata)
+    catch err
+        Base.showerror(stderr, err)
+        println(stderr)
+    end
     nothing
 end
 

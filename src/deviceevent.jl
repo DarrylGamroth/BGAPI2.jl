@@ -5,7 +5,11 @@ mutable struct DeviceEvent
     function DeviceEvent()
         device_event = Ref{Ptr{BGAPI2_DeviceEvent}}()
         @check BGAPI2_CreateDeviceEvent(device_event)
-        new(device_event[], Vector{UInt8}(undef, 64))
+        event = new(device_event[], Vector{UInt8}(undef, 64))
+        finalizer(event) do d
+            BGAPI2_ReleaseDeviceEvent(d.device_event)
+        end
+        return event
     end
     function DeviceEvent(d::Ptr{BGAPI2_DeviceEvent})
         new(d, Vector{UInt8}(undef, 64))

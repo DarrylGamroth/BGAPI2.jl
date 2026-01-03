@@ -5,7 +5,11 @@ mutable struct PnPEvent
     function PnPEvent()
         pnp_event = Ref{Ptr{BGAPI2_PnPEvent}}()
         @check BGAPI2_CreatePnPEvent(pnp_event)
-        new(pnp_event[], Vector{UInt8}(undef, 64))
+        event = new(pnp_event[], Vector{UInt8}(undef, 64))
+        finalizer(event) do p
+            BGAPI2_ReleasePnPEvent(p.pnp_event)
+        end
+        return event
     end
     function PnPEvent(p::Ptr{BGAPI2_PnPEvent})
         new(p, Vector{UInt8}(undef, 64))

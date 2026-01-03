@@ -3,12 +3,13 @@ mutable struct Interface
     const system::System
     on_pnp_event::Tuple{Function,Any}
     string_buffer::Vector{UInt8}
+    on_pnp_event_ref::Union{Nothing, Base.RefValue}
 
     function Interface(system::System, index::Int)
         interface = Ref{Ptr{BGAPI2_Interface}}()
         @check BGAPI2_System_GetInterface(system.system, index - 1, interface)
 
-        new(interface[], system, (empty_pnp_event_handler, nothing), Vector{UInt8}(undef, 256))
+        new(interface[], system, (empty_pnp_event_handler, nothing), Vector{UInt8}(undef, 256), nothing)
     end
 end
 
@@ -73,12 +74,18 @@ empty_pnp_event_handler(_, _) = nothing
 function register_pnp_event_handler(callback::Function, i::Interface, userdata=nothing)
     cb = (callback, userdata)
     i.on_pnp_event = cb
+    i.on_pnp_event_ref = Ref(cb)
     @check BGAPI2_Interface_RegisterPnPEventHandler(i.interface,
-        Ref(cb), pnp_event_handler_cfunction(cb))
+        i.on_pnp_event_ref, pnp_event_handler_cfunction(cb))
 end
 
 function pnp_event_handler_wrapper((callback, userdata), pnpEvent)
-    callback(PnPEvent(pnpEvent), userdata)
+    try
+        callback(PnPEvent(pnpEvent), userdata)
+    catch err
+        Base.showerror(stderr, err)
+        println(stderr)
+    end
     nothing
 end
 

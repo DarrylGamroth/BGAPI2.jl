@@ -1,23 +1,62 @@
 mutable struct Buffer
     buffer::Ptr{BGAPI2_Buffer}
     string_buffer::Vector{UInt8}
-
+    user_ref::Union{Nothing, Ref{Buffer}}
+    external_buffer::Union{Nothing, AbstractVector}
+    Buffer(buffer::Ptr{BGAPI2_Buffer}) = new(buffer, Vector{UInt8}(undef, 64), nothing, nothing)
     function Buffer()
-        b = new()
+        b = new(C_NULL, Vector{UInt8}(undef, 64), nothing, nothing)
+        user_ref = Ref(b)
         buffer = Ref{Ptr{BGAPI2_Buffer}}()
-        @check BGAPI2_CreateBufferWithUserPtr(buffer, Ref(b))
+        @check BGAPI2_CreateBufferWithUserPtr(buffer, user_ref)
         b.buffer = buffer[]
-        b.string_buffer = Vector{UInt8}(undef, 64)
+        b.user_ref = user_ref
+        finalizer(b) do b
+            if b.buffer != C_NULL
+                user_obj = Ref{Ptr{Cvoid}}()
+                BGAPI2_DeleteBuffer(b.buffer, user_obj)
+            end
+        end
+        return b
+    end
+    function Buffer(user_buffer::StridedVector{T}) where {T}
+        isbitstype(T) || throw(ArgumentError("External buffer element type must be isbits"))
+        stride(user_buffer, 1) == 1 || throw(ArgumentError("External buffer must be contiguous (stride == 1)"))
+        b = new(C_NULL, Vector{UInt8}(undef, 64), nothing, user_buffer)
+        user_ref = Ref(b)
+        buffer = Ref{Ptr{BGAPI2_Buffer}}()
+        GC.@preserve user_buffer begin
+            @check BGAPI2_CreateBufferWithExternalMemory(
+                buffer,
+                pointer(user_buffer),
+                sizeof(T) * length(user_buffer),
+                user_ref,
+            )
+        end
+        b.buffer = buffer[]
+        b.user_ref = user_ref
+        finalizer(b) do b
+            if b.buffer != C_NULL
+                user_obj = Ref{Ptr{Cvoid}}()
+                BGAPI2_DeleteBuffer(b.buffer, user_obj)
+            end
+        end
         return b
     end
     function Buffer(p::Ptr{BGAPI2_Buffer})
-        new(p, Vector{UInt8}(undef, 64))
+        new(p, Vector{UInt8}(undef, 64), nothing, nothing)
     end
 end
 
 function release(b::Buffer)
+    if b.buffer == C_NULL
+        return
+    end
     user_obj = Ref{Ptr{Cvoid}}(C_NULL)
     @check BGAPI2_DeleteBuffer(b.buffer, user_obj)
+    b.buffer = C_NULL
+    b.user_ref = nothing
+    b.external_buffer = nothing
 end
 
 function node(b::Buffer, name::AbstractString)

@@ -3,11 +3,12 @@ mutable struct DataStream
     const device::Device
     on_new_buffer::Tuple{Function,Any}
     string_buffer::Vector{UInt8}
+    on_new_buffer_ref::Union{Nothing, Base.RefValue}
 
     function DataStream(device::Device, index::Int)
         datastream = Ref{Ptr{BGAPI2_DataStream}}()
         @check BGAPI2_Device_GetDataStream(device.device, index - 1, datastream)
-        new(datastream[], device, (empty_on_new_buffer_event_handler, nothing), Vector{UInt8}(undef, 256))
+        new(datastream[], device, (empty_on_new_buffer_event_handler, nothing), Vector{UInt8}(undef, 256), nothing)
     end
 end
 
@@ -113,7 +114,7 @@ function filled_buffer(d::DataStream, timeout::Int64=-1)
     @check BGAPI2_DataStream_GetFilledBuffer(d.datastream, buffer, reinterpret(UInt64, timeout))
     user_ptr = Ref{Ptr{Cvoid}}()
     @check BGAPI2_Buffer_GetUserPtr(buffer[], user_ptr)
-    unsafe_pointer_to_objref(user_ptr[])::Buffer
+    return buffer_from_user_ptr(user_ptr[])
 end
 
 function filled_buffer_nothrow(d::DataStream, timeout::Int64=-1)
@@ -125,7 +126,7 @@ function filled_buffer_nothrow(d::DataStream, timeout::Int64=-1)
     check_status(status)
     user_ptr = Ref{Ptr{Cvoid}}()
     @check BGAPI2_Buffer_GetUserPtr(buffer[], user_ptr)
-    unsafe_pointer_to_objref(user_ptr[])::Buffer
+    return buffer_from_user_ptr(user_ptr[])
 end
 
 function cancel_get_filled_buffer(d::DataStream)
@@ -137,7 +138,7 @@ function Base.getindex(d::DataStream, index)
     @check BGAPI2_DataStream_GetBufferID(d.datastream, index - 1, buffer)
     user_ptr = Ref{Ptr{Cvoid}}()
     @check BGAPI2_Buffer_GetUserPtr(buffer[], user_ptr)
-    unsafe_pointer_to_objref(user_ptr[])::Buffer
+    return buffer_from_user_ptr(user_ptr[])
 end
 
 function Base.show(io::IO, ::MIME"text/plain", d::DataStream)
@@ -157,22 +158,41 @@ empty_on_new_buffer_event_handler(_, _) = nothing
 function register_new_buffer_event_handler(callback::Function, d::DataStream, userdata=nothing)
     cb = (callback, userdata)
     d.on_new_buffer = cb
+    d.on_new_buffer_ref = Ref(cb)
     @check BGAPI2_DataStream_RegisterNewBufferEventHandler(d.datastream,
-        Ref(cb), new_buffer_event_handler_cfunction(cb))
+        d.on_new_buffer_ref, new_buffer_event_handler_cfunction(cb))
 end
 
 function new_buffer_event_handler_wrapper((callback, userdata), pBuffer)
-    user_ptr = Ref{Ptr{Cvoid}}()
-    @check BGAPI2_Buffer_GetUserPtr(pBuffer, user_ptr)
-    b = unsafe_pointer_to_objref(user_ptr[])::Buffer
-    GC.@preserve b begin
-        callback(b, userdata)
+    try
+        user_ptr = Ref{Ptr{Cvoid}}()
+        @check BGAPI2_Buffer_GetUserPtr(pBuffer, user_ptr)
+        b = buffer_from_user_ptr(user_ptr[])
+        GC.@preserve b begin
+            callback(b, userdata)
+        end
+    catch err
+        Base.showerror(stderr, err)
+        println(stderr)
     end
     nothing
 end
 
 function new_buffer_event_handler_cfunction(::T) where {T}
     @cfunction(new_buffer_event_handler_wrapper, Cvoid, (Ref{T}, Ptr{BGAPI2_Buffer}))
+end
+
+function buffer_from_user_ptr(user_ptr::Ptr{Cvoid})
+    if user_ptr == C_NULL
+        throw(ArgumentError("Buffer user pointer is null"))
+    end
+    obj = unsafe_pointer_to_objref(user_ptr)
+    if obj isa Base.RefValue{Buffer}
+        return obj[]
+    elseif obj isa Buffer
+        return obj
+    end
+    throw(ArgumentError("Buffer user pointer does not reference a Buffer"))
 end
 
 struct BufferList
