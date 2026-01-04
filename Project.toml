@@ -1,6 +1,6 @@
 name = "BGAPI2"
 uuid = "1e3e096f-6c67-414b-b19e-57dba9f71c96"
-version = "0.1.17"
+version = "0.1.18"
 authors = ["Darryl Gamroth <dgamroth@rubus.ca>"]
 
 [deps]
