@@ -43,9 +43,6 @@ mutable struct Buffer
         end
         return b
     end
-    function Buffer(p::Ptr{BGAPI2_Buffer})
-        new(p, Vector{UInt8}(undef, 64), nothing, nothing)
-    end
 end
 
 function release(b::Buffer)
